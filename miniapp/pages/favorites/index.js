@@ -30,7 +30,7 @@ Page({
     } else {
       this.setData({
         favorites: [],
-        message: '登录后才能查看和管理收藏。',
+        message: '登录后才能同步你的非遗收藏清单。',
       });
     }
   },
@@ -66,7 +66,7 @@ Page({
       });
       this.setData({
         favorites: page.list,
-        message: page.list.length ? '' : '还没有收藏商品，去列表页挑一个吧。',
+        message: page.list.length ? '' : '还没有收藏单品，去首页挑一件喜欢的作品吧。',
       });
     } catch (error) {
       this.setData({ message: error.message || '收藏加载失败' });
@@ -91,6 +91,18 @@ Page({
   goDetail(event) {
     wx.navigateTo({
       url: `/pages/detail/index?id=${event.currentTarget.dataset.id}`,
+    });
+  },
+
+  goCart() {
+    wx.navigateTo({
+      url: '/pages/cart/index',
+    });
+  },
+
+  goProfile() {
+    wx.navigateTo({
+      url: '/pages/profile/index',
     });
   },
 });

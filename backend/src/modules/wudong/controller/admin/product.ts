@@ -6,7 +6,6 @@ import {
   TagTypes,
 } from '@cool-midway/core';
 import { WudongProductService } from '../../service/product';
-import { LoginDTO } from '../../../base/dto/login';
 import { BaseSysLoginService } from '../../../base/service/sys/login';
 
 @Provide()
@@ -32,7 +31,7 @@ export class AdminWudongProductController extends BaseController {
 
   @CoolTag(TagTypes.IGNORE_TOKEN)
   @Post('/login', { summary: '后台登录' })
-  async login(@Body() login: LoginDTO) {
+  async login(@Body(ALL) login: { username: string; password: string }) {
     return this.ok(
       await this.baseSysLoginService.loginWithoutCaptcha({
         username: login.username,

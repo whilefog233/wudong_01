@@ -1,30 +1,35 @@
 <view class="shell">
   <view class="panel login-panel">
-    <text class="title">收藏页登录</text>
-    <text class="muted">默认演示账号使用 13800000000 / 123456。</text>
+    <text class="eyebrow">我的收藏</text>
+    <text class="title">把喜欢的蜡染、银饰与刺绣慢慢积累成自己的选品墙。</text>
+    <text class="subtitle">演示账号默认使用 13800000000 / 123456。</text>
+
     <input class="field" value="{{phone}}" bindinput="onPhoneInput" placeholder="手机号" />
     <input class="field" password value="{{password}}" bindinput="onPasswordInput" placeholder="密码" />
+
     <view class="login-actions">
-      <button class="button-primary" bindtap="onLogin">登录</button>
-      <button wx:if="{{hasToken}}" class="button-ghost" bindtap="onLogout">退出</button>
+      <button class="button-primary action-button" bindtap="onLogin">登录</button>
+      <button wx:if="{{hasToken}}" class="button-ghost action-button" bindtap="onLogout">退出</button>
+      <button class="button-ghost action-button" bindtap="goCart">购物车</button>
+      <button class="button-ghost action-button" bindtap="goProfile">我的</button>
     </view>
   </view>
 
-  <view wx:if="{{message}}" class="muted">{{message}}</view>
+  <view wx:if="{{message}}" class="message">{{message}}</view>
 
   <view class="favorite-list">
     <block wx:for="{{favorites}}" wx:key="favoriteId">
       <view class="panel favorite-card">
         <image class="favorite-image" mode="aspectFill" src="{{item.coverImage || 'https://placehold.co/640x480?text=Wudong'}}" />
         <view class="favorite-copy">
-          <text class="category">{{item.categoryName}}</text>
+          <text class="eyebrow">{{item.categoryName}}</text>
           <text class="favorite-title">{{item.title}}</text>
-          <text class="muted">{{item.subtitle || '暂无副标题'}}</text>
-          <text class="price">￥{{item.minPrice}}{{item.minPrice !== item.maxPrice ? ' - ￥' + item.maxPrice : ''}}</text>
+          <text class="subtitle">{{item.subtitle || '已加入你的非遗收藏夹。'}}</text>
+          <text class="price">¥{{item.minPrice}}{{item.minPrice !== item.maxPrice ? ' - ¥' + item.maxPrice : ''}}</text>
         </view>
         <view class="favorite-actions">
-          <button class="button-ghost" data-id="{{item.productId}}" bindtap="goDetail">查看详情</button>
-          <button class="button-primary" data-id="{{item.productId}}" bindtap="onRemoveFavorite">取消收藏</button>
+          <button class="button-ghost action-button" data-id="{{item.productId}}" bindtap="goDetail">查看详情</button>
+          <button class="button-primary action-button" data-id="{{item.productId}}" bindtap="onRemoveFavorite">取消收藏</button>
         </view>
       </view>
     </block>

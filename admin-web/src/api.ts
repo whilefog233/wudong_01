@@ -98,7 +98,7 @@ export function loginAdmin(payload: {
   username: string;
   password: string;
 }) {
-  return request<LoginResult>('/admin/wudong/products/login', {
+  return request<LoginResult>('/admin/wudong/auth/login', {
     method: 'POST',
     body: payload,
   });

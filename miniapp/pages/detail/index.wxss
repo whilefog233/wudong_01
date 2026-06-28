@@ -1,6 +1,7 @@
+.hero-swiper,
 .hero-image {
   width: 100%;
-  height: 520rpx;
+  height: 560rpx;
   border-radius: 28rpx;
 }
 
@@ -9,16 +10,26 @@
   margin-top: 20rpx;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
-.category {
-  color: #9a502a;
-  font-weight: 700;
+.price-panel {
+  display: flex;
+  gap: 16rpx;
+}
+
+.price-panel view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding: 18rpx;
+  border-radius: 22rpx;
+  background: rgba(31, 95, 168, 0.05);
 }
 
 .price {
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: 700;
 }
 
@@ -30,19 +41,43 @@
   color: #ad3724;
 }
 
+.sku-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.sku-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.sku-pill {
+  min-width: 220rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 20rpx;
+  background: rgba(31, 95, 168, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.sku-pill.active {
+  background: #1f5fa8;
+  color: #ffffff;
+}
+
+.sku-pill.active .muted {
+  color: rgba(255, 255, 255, 0.78);
+}
+
 .detail-actions {
   display: flex;
   gap: 16rpx;
 }
 
-.section-title {
-  font-weight: 700;
-}
-
-.sku-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding: 16rpx 0;
-  border-top: 1px solid rgba(120, 74, 46, 0.12);
+.action-button {
+  flex: 1;
+  margin: 0;
 }

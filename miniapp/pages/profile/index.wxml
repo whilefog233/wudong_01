@@ -1,0 +1,58 @@
+<view class="shell">
+  <view class="panel profile-card">
+    <text class="eyebrow">个人中心</text>
+    <text class="title">{{profile.nickname}}</text>
+    <text class="subtitle">{{profile.bio}}</text>
+
+    <view class="stats-row">
+      <view class="mini-card">
+        <text class="card-number">{{orders.length}}</text>
+        <text class="muted">订单数量</text>
+      </view>
+      <view class="mini-card">
+        <text class="card-number">{{addresses.length}}</text>
+        <text class="muted">地址数量</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel login-card">
+    <text class="section-title">统一账号登录</text>
+    <input class="field" value="{{phone}}" bindinput="onPhoneInput" placeholder="手机号" />
+    <input class="field" password value="{{password}}" bindinput="onPasswordInput" placeholder="密码" />
+    <view class="login-actions">
+      <button class="button-primary action-button" bindtap="onLogin">登录</button>
+      <button wx:if="{{hasToken}}" class="button-ghost action-button" bindtap="onLogout">退出</button>
+      <button class="button-ghost action-button" bindtap="goFavorites">我的收藏</button>
+    </view>
+  </view>
+
+  <view class="panel section-card">
+    <text class="section-title">我的订单</text>
+    <block wx:if="{{orders.length}}">
+      <block wx:for="{{orders}}" wx:key="id">
+        <view class="order-row">
+          <view>
+            <text>{{item.id}}</text>
+            <text class="muted">{{item.createdAt}}</text>
+          </view>
+          <view class="order-meta">
+            <text>{{item.totalQuantity}} 件</text>
+            <text>¥{{item.totalAmount}}</text>
+          </view>
+        </view>
+      </block>
+    </block>
+    <text wx:else class="subtitle">当前还没有订单，去商品详情页试试“立即下单”吧。</text>
+  </view>
+
+  <view class="panel section-card">
+    <text class="section-title">收货地址</text>
+    <block wx:for="{{addresses}}" wx:key="id">
+      <view class="address-row">
+        <text>{{item.receiver}} · {{item.phone}}</text>
+        <text class="subtitle">{{item.region}}{{item.detail}}</text>
+      </view>
+    </block>
+  </view>
+</view>

@@ -1,0 +1,39 @@
+<view class="shell">
+  <view wx:if="{{message}}" class="message">{{message}}</view>
+
+  <block wx:if="{{items.length}}">
+    <view class="panel address-card">
+      <text class="eyebrow">默认地址</text>
+      <text class="section-title">{{address.receiver}} · {{address.phone}}</text>
+      <text class="subtitle">{{address.region}}{{address.detail}}</text>
+    </view>
+
+    <view class="cart-list">
+      <block wx:for="{{items}}" wx:key="skuId">
+        <view class="panel cart-item">
+          <image class="cart-image" mode="aspectFill" src="{{item.coverImage || 'https://placehold.co/640x480?text=Wudong'}}" />
+          <view class="cart-copy">
+            <text class="eyebrow">{{item.categoryName}}</text>
+            <text class="cart-title">{{item.title}}</text>
+            <text class="subtitle">{{item.skuName}} · {{item.skuSpecs}}</text>
+            <text class="cart-price">¥{{item.unitPrice}}</text>
+          </view>
+          <view class="qty-row">
+            <button class="button-ghost qty-button" data-id="{{item.skuId}}" data-delta="-1" bindtap="changeQuantity">-</button>
+            <text>{{item.quantity}}</text>
+            <button class="button-ghost qty-button" data-id="{{item.skuId}}" data-delta="1" bindtap="changeQuantity">+</button>
+          </view>
+          <button class="button-ghost remove-button" data-id="{{item.skuId}}" bindtap="removeItem">删除</button>
+        </view>
+      </block>
+    </view>
+
+    <view class="panel submit-card">
+      <text class="eyebrow">结算摘要</text>
+      <text class="section-title">支付先不做，订单先生成。</text>
+      <text class="cart-price">合计 ¥{{totalAmountText}}</text>
+      <button class="button-primary submit-button" bindtap="submitOrder">提交订单</button>
+      <button class="button-ghost submit-button" bindtap="goProfile">去我的订单</button>
+    </view>
+  </block>
+</view>

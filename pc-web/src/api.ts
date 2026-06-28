@@ -122,18 +122,22 @@ export function fetchProducts(params: {
   pageSize: number;
   categoryId?: number;
   keyWord?: string;
-}) {
+}, token?: string | null) {
   const query = new URLSearchParams({
     page: String(params.page),
     pageSize: String(params.pageSize),
     ...(params.categoryId ? { categoryId: String(params.categoryId) } : {}),
     ...(params.keyWord ? { keyWord: params.keyWord } : {}),
   });
-  return request<PageData<ProductCard>>(`/app/wudong/products/page?${query.toString()}`);
+  return request<PageData<ProductCard>>(`/app/wudong/products/page?${query.toString()}`, {
+    token,
+  });
 }
 
-export function fetchProductDetail(id: number) {
-  return request<ProductDetail>(`/app/wudong/products/detail?id=${id}`);
+export function fetchProductDetail(id: number, token?: string | null) {
+  return request<ProductDetail>(`/app/wudong/products/detail?id=${id}`, {
+    token,
+  });
 }
 
 export function fetchFavoritePage(token: string, page = 1, pageSize = 20) {

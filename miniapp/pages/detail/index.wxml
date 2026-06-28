@@ -1,41 +1,78 @@
 <view class="shell">
-  <view wx:if="{{message}}" class="muted">{{message}}</view>
+  <view wx:if="{{message}}" class="message">{{message}}</view>
 
   <block wx:if="{{detail}}">
-    <image class="hero-image" mode="aspectFill" src="{{detail.coverImage || 'https://placehold.co/900x700?text=Wudong'}}" />
+    <swiper class="hero-swiper" indicator-dots="true" autoplay="false">
+      <block wx:for="{{detail.images}}" wx:key="id">
+        <swiper-item>
+          <image class="hero-image" mode="aspectFill" src="{{item.url}}" />
+        </swiper-item>
+      </block>
+      <swiper-item wx:if="{{!detail.images.length}}">
+        <image class="hero-image" mode="aspectFill" src="{{detail.coverImage || 'https://placehold.co/900x700?text=Wudong'}}" />
+      </swiper-item>
+    </swiper>
 
     <view class="panel detail-head">
-      <text class="category">{{detail.categoryName}}</text>
+      <text class="eyebrow">{{detail.categoryName}}</text>
       <text class="title">{{detail.title}}</text>
-      <text class="muted">{{detail.subtitle || '暂无副标题'}}</text>
-      <text class="price">￥{{detail.minPrice}}{{detail.minPrice !== detail.maxPrice ? ' - ￥' + detail.maxPrice : ''}}</text>
-      <text class="stock {{detail.soldOut ? 'warn' : 'ok'}}">{{detail.soldOut ? '全部 SKU 无库存，当前售罄' : '当前可购买'}}</text>
+      <text class="subtitle">{{detail.subtitle || '把非遗工艺放回当代穿戴与日常美学里。'}}</text>
+
+      <view class="price-panel">
+        <view>
+          <text class="muted">当前售价</text>
+          <text class="price">¥{{detail.minPrice}}{{detail.minPrice !== detail.maxPrice ? ' - ¥' + detail.maxPrice : ''}}</text>
+        </view>
+        <view>
+          <text class="muted">售卖状态</text>
+          <text class="stock {{detail.soldOut ? 'warn' : 'ok'}}">{{detail.soldOut ? '已售罄' : '可选购'}}</text>
+        </view>
+      </view>
+
+      <view class="sku-list">
+        <text class="section-title">规格选择</text>
+        <view class="sku-grid">
+          <block wx:for="{{detail.skus}}" wx:key="id">
+            <view
+              class="sku-pill {{selectedSkuId === item.id ? 'active' : ''}}"
+              data-id="{{item.id}}"
+              bindtap="onSelectSku"
+            >
+              <text>{{item.name}}</text>
+              <text class="muted">库存 {{item.stock}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
       <view class="detail-actions">
-        <button class="button-primary" bindtap="onToggleFavorite">{{detail.isFavorite ? '取消收藏' : '收藏商品'}}</button>
-        <button class="button-ghost" bindtap="goFavorites">去收藏页</button>
+        <button class="button-primary action-button" bindtap="onAddToCart">加入购物车</button>
+        <button class="button-ghost action-button" bindtap="onCreateOrder">立即下单</button>
+      </view>
+
+      <view class="detail-actions">
+        <button class="button-ghost action-button" bindtap="onToggleFavorite">
+          {{detail.isFavorite ? '取消收藏' : '收藏单品'}}
+        </button>
+        <button class="button-ghost action-button" bindtap="goCart">去购物车</button>
+        <button class="button-ghost action-button" bindtap="goFavorites">我的收藏</button>
       </view>
     </view>
 
     <view class="panel section">
+      <text class="section-title">商品说明</text>
+      <text class="subtitle">{{detail.description || '暂无额外说明。'}}</text>
+    </view>
+
+    <view class="panel section">
       <text class="section-title">工艺介绍</text>
-      <text class="muted">{{detail.craftIntro || '暂无工艺介绍'}}</text>
+      <text class="subtitle">{{detail.craftIntro || '暂无工艺介绍。'}}</text>
     </view>
 
     <view class="panel section">
-      <text class="section-title">传承人</text>
-      <text>{{detail.inheritorName || '暂无传承人姓名'}}</text>
-      <text class="muted">{{detail.inheritorIntro || '暂无传承人介绍'}}</text>
-    </view>
-
-    <view class="panel section">
-      <text class="section-title">SKU 列表</text>
-      <block wx:for="{{detail.skus}}" wx:key="id">
-        <view class="sku-row">
-          <text>{{item.name}}</text>
-          <text>售价：￥{{item.salePrice}}</text>
-          <text>库存：{{item.stock}}</text>
-        </view>
-      </block>
+      <text class="section-title">传承人故事</text>
+      <text>{{detail.inheritorName || '待补充传承人信息'}}</text>
+      <text class="subtitle">{{detail.inheritorIntro || '暂无传承人介绍。'}}</text>
     </view>
   </block>
 </view>

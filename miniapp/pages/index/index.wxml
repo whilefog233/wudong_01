@@ -1,53 +1,57 @@
 <view class="shell">
-  <view class="debug-panel">
-    <text class="debug-title">页面调试信息</text>
-    <text class="debug-line">步骤：{{debugStep}}</text>
-    <text class="debug-line">状态：{{debugText}}</text>
-    <text class="debug-line">当前接口：{{apiOrigin}}</text>
-    <text class="debug-line">分类数量：{{debugCategoriesCount}}</text>
-    <text class="debug-line">商品数量：{{debugProductsCount}}</text>
-    <text class="debug-line" wx:if="{{debugError}}">错误：{{debugError}}</text>
+  <view class="panel hero-card">
+    <text class="eyebrow">WUDONG HERITAGE</text>
+    <text class="title">乌东文旅 · 衣</text>
+    <text class="subtitle">
+      围绕苗银、蜡染、刺绣与节庆服饰，把“浏览 - 详情 - 收藏 - 加购 - 下单占位”这条链路在小程序里先走通。
+    </text>
 
-    <input
-      class="debug-input"
-      placeholder="输入可访问的接口地址，如 http://10.130.189.96:3000"
-      value="{{apiOriginInput}}"
-      bindinput="onApiOriginInput"
-    />
-    <view class="debug-actions">
-      <button class="button-primary small-button" bindtap="onSaveApiOrigin">
-        保存地址
-      </button>
-      <button class="button-ghost small-button" bindtap="onResetApiOrigin">
-        恢复默认
-      </button>
+    <view class="hero-stats">
+      <view class="stat-card">
+        <text class="stat-value">{{categories.length}}</text>
+        <text class="stat-label">分类数量</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{cartCount}}</text>
+        <text class="stat-label">购物车件数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{orderCount}}</text>
+        <text class="stat-label">订单数量</text>
+      </view>
     </view>
-  </view>
 
-  <view class="panel hero">
-    <text class="title">乌东非遗商品</text>
-    <text class="muted">分类、列表、详情和收藏都复用同一套用户端接口。</text>
-    <button class="button-ghost mini-link" bindtap="goFavorites">去我的收藏</button>
+    <view class="quick-nav">
+      <button class="button-primary nav-button" bindtap="goFavorites">我的收藏</button>
+      <button class="button-ghost nav-button" bindtap="goCart">购物车</button>
+      <button class="button-ghost nav-button" bindtap="goProfile">我的</button>
+    </view>
   </view>
 
   <view class="panel search-panel">
     <input
-      class="search-input"
-      placeholder="搜索商品标题或副标题"
+      class="field"
+      placeholder="搜索银饰、蜡染、刺绣、苗服"
       value="{{keyWord}}"
       bindinput="onKeywordInput"
       confirm-type="search"
       bindconfirm="onSearch"
     />
-    <button class="button-primary search-button" bindtap="onSearch">搜索</button>
+    <button class="button-primary search-button" bindtap="onSearch">搜索商品</button>
+    <view class="hot-searches">
+      <text class="eyebrow">热门搜索</text>
+      <view class="tag-row">
+        <text class="tag" data-keyword="苗银手镯" bindtap="onHotSearch">苗银手镯</text>
+        <text class="tag" data-keyword="蜡染披肩" bindtap="onHotSearch">蜡染披肩</text>
+        <text class="tag" data-keyword="刺绣胸针" bindtap="onHotSearch">刺绣胸针</text>
+        <text class="tag" data-keyword="苗族服饰" bindtap="onHotSearch">苗族服饰</text>
+      </view>
+    </view>
   </view>
 
   <scroll-view class="category-strip" scroll-x="true">
     <view class="category-row">
-      <view
-        class="category-pill {{activeCategoryId === '' ? 'active' : ''}}"
-        bindtap="onSelectCategory"
-      >
+      <view class="category-pill {{activeCategoryId === '' ? 'active' : ''}}" bindtap="onSelectCategory">
         全部
       </view>
       <block wx:for="{{categories}}" wx:key="id">
@@ -62,7 +66,7 @@
     </view>
   </scroll-view>
 
-  <view wx:if="{{message}}" class="muted error">{{message}}</view>
+  <view wx:if="{{message}}" class="message">{{message}}</view>
   <view wx:if="{{loading}}" class="muted">商品加载中...</view>
 
   <view class="product-list">
@@ -74,13 +78,15 @@
           src="{{item.coverImage || 'https://placehold.co/640x480?text=Wudong'}}"
         />
         <view class="product-copy">
-          <text class="category-label">{{item.categoryName}}</text>
+          <text class="eyebrow">{{item.categoryName}}</text>
           <text class="product-title">{{item.title}}</text>
-          <text class="muted">{{item.subtitle || '暂无副标题'}}</text>
-          <text class="price">￥{{item.minPrice}}{{item.minPrice !== item.maxPrice ? ' - ￥' + item.maxPrice : ''}}</text>
-          <text class="sold-out {{item.soldOut ? 'warn' : 'ok'}}">
-            {{item.soldOut ? '已售罄' : '可购买'}}
-          </text>
+          <text class="muted">{{item.subtitle || '把非遗工艺带回日常穿戴场景。'}}</text>
+          <view class="product-footer">
+            <text class="product-price">
+              ¥{{item.minPrice}}{{item.minPrice !== item.maxPrice ? ' - ¥' + item.maxPrice : ''}}
+            </text>
+            <text class="stock {{item.soldOut ? 'warn' : 'ok'}}">{{item.soldOut ? '已售罄' : '可选购'}}</text>
+          </view>
         </view>
       </view>
     </block>

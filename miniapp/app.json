@@ -2,13 +2,15 @@
   "pages": [
     "pages/index/index",
     "pages/detail/index",
-    "pages/favorites/index"
+    "pages/favorites/index",
+    "pages/cart/index",
+    "pages/profile/index"
   ],
   "window": {
-    "navigationBarTitleText": "乌东非遗商品",
-    "navigationBarBackgroundColor": "#f6efe8",
+    "navigationBarTitleText": "乌东文旅 · 衣",
+    "navigationBarBackgroundColor": "#F7FBFF",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f3ece4",
+    "backgroundColor": "#EEF4FB",
     "backgroundTextStyle": "light"
   },
   "style": "v2",

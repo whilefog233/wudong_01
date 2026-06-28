@@ -1,7 +1,9 @@
 :root {
-  color: #1f1f1f;
-  background: linear-gradient(180deg, #f7efe8 0%, #efe3d4 100%);
-  font-family: "Segoe UI", "PingFang SC", sans-serif;
+  color: #17324e;
+  background:
+    radial-gradient(circle at top left, rgba(31, 95, 168, 0.12), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+  font-family: 'Segoe UI', 'PingFang SC', sans-serif;
 }
 
 body {
@@ -18,28 +20,22 @@ body {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at top left, rgba(212, 127, 69, 0.25), transparent 28%),
-    linear-gradient(135deg, #f5ece4, #eadccf);
+    radial-gradient(circle at 15% 10%, rgba(31, 95, 168, 0.18), transparent 22%),
+    radial-gradient(circle at 82% 12%, rgba(232, 93, 47, 0.14), transparent 20%),
+    linear-gradient(135deg, #f8fbff, #edf3fb);
 }
 
 .login-panel {
   width: min(520px, 100%);
   border-radius: 28px;
-  box-shadow: 0 24px 60px rgba(117, 65, 36, 0.14);
+  box-shadow: 0 28px 70px rgba(14, 61, 117, 0.12);
 }
 
 .eyebrow {
-  color: #8b431f;
+  color: #1f5fa8;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-}
-
-.captcha-image {
-  display: block;
-  width: 180px;
-  margin-top: 12px;
-  border-radius: 14px;
-  background: #fff;
+  font-weight: 700;
 }
 
 .admin-shell {
@@ -47,18 +43,39 @@ body {
 }
 
 .admin-sider {
-  background: linear-gradient(180deg, #2f170d 0%, #6f381e 100%) !important;
+  background: linear-gradient(180deg, #0e3d75 0%, #1f5fa8 52%, #114785 100%) !important;
   padding: 18px 12px;
 }
 
 .brand-block {
-  padding: 12px 12px 20px;
-  color: #fff4ea;
+  padding: 12px 14px 20px;
+  color: #eef6ff;
 }
 
-.brand-block h3 {
-  color: #fff4ea !important;
+.brand-block h3,
+.brand-block .ant-typography {
+  color: #eef6ff !important;
+}
+
+.brand-block p {
+  color: rgba(238, 246, 255, 0.78) !important;
   margin-bottom: 0 !important;
+}
+
+.admin-sider .ant-menu {
+  background: transparent !important;
+  border-inline-end: 0 !important;
+}
+
+.admin-sider .ant-menu-item {
+  border-radius: 14px !important;
+  margin-bottom: 6px !important;
+  color: rgba(238, 246, 255, 0.82) !important;
+}
+
+.admin-sider .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
 }
 
 .admin-header {
@@ -66,8 +83,10 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: rgba(255, 250, 246, 0.9);
-  border-bottom: 1px solid rgba(139, 67, 31, 0.08);
+  padding: 18px 24px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-bottom: 1px solid rgba(23, 50, 78, 0.08);
+  backdrop-filter: blur(18px);
 }
 
 .admin-content {
@@ -75,10 +94,28 @@ body {
 }
 
 .content-card,
-.toolbar {
-  margin-bottom: 16px;
+.metric-card {
+  border-radius: 24px !important;
+  box-shadow: 0 18px 50px rgba(14, 61, 117, 0.08);
+}
+
+.dashboard-stack {
+  display: grid;
+  gap: 16px;
 }
 
 .toolbar {
   display: flex;
+  margin-bottom: 16px;
+}
+
+.recommend-row,
+.application-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(31, 95, 168, 0.05);
 }

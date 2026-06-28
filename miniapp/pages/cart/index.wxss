@@ -1,42 +1,42 @@
-.login-panel,
-.favorite-card {
+.address-card,
+.cart-item,
+.submit-card {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
   margin-bottom: 20rpx;
 }
 
-.login-actions,
-.favorite-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.action-button {
-  flex: 1;
-  margin: 0;
-}
-
-.favorite-image {
+.cart-image {
   width: 100%;
-  height: 300rpx;
+  height: 260rpx;
   border-radius: 18rpx;
 }
 
-.favorite-copy {
+.cart-copy {
   display: flex;
   flex-direction: column;
   gap: 10rpx;
 }
 
-.favorite-title {
+.cart-title {
   font-size: 34rpx;
   font-weight: 700;
-  line-height: 1.35;
 }
 
-.price {
+.cart-price {
   font-size: 32rpx;
   font-weight: 700;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.qty-button,
+.remove-button,
+.submit-button {
+  margin: 0;
 }
