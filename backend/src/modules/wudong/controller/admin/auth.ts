@@ -1,4 +1,4 @@
-import { Body, Get, Inject, Post, Query } from '@midwayjs/core';
+import { Body, Get, Inject, Post, Provide, Query } from '@midwayjs/core';
 import {
   BaseController,
   CoolController,
@@ -9,6 +9,7 @@ import { Validate } from '@midwayjs/validate';
 import { LoginDTO } from '../../../base/dto/login';
 import { BaseSysLoginService } from '../../../base/service/sys/login';
 
+@Provide()
 @CoolController('/admin/wudong/auth')
 export class AdminWudongAuthController extends BaseController {
   @Inject()

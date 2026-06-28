@@ -1,7 +1,8 @@
-import { Body, Get, Inject, Post, Query } from '@midwayjs/core';
+import { Body, Get, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { BaseController, CoolController } from '@cool-midway/core';
 import { WudongFavoriteService } from '../../service/favorite';
 
+@Provide()
 @CoolController('/app/wudong/favorites')
 export class AppWudongFavoriteController extends BaseController {
   @Inject()

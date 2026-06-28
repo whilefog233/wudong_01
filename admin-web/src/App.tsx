@@ -72,11 +72,31 @@ type ProductFormValues = {
   images: ProductImage[];
 };
 
+function getDefaultSku(): ProductSku {
+  return {
+    name: '默认款',
+    salePrice: 0,
+    originalPrice: 0,
+    stock: 0,
+    status: 1,
+  };
+}
+
+function getDefaultImage(isMain = 1): ProductImage {
+  return {
+    url: '',
+    isMain,
+    sortOrder: 0,
+  };
+}
+
 function App() {
   const [token, setToken] = useState<string | null>(
     () => localStorage.getItem(TOKEN_KEY) ?? 'local-dev-bypass'
   );
-  const [activePanel, setActivePanel] = useState<'category' | 'product'>('category');
+  const [activePanel, setActivePanel] = useState<'category' | 'product'>(
+    'category'
+  );
   const [loginLoading, setLoginLoading] = useState(false);
 
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -88,21 +108,30 @@ function App() {
   const [productLoading, setProductLoading] = useState(false);
   const [productData, setProductData] = useState<Product[]>([]);
   const [productFormOpen, setProductFormOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [productKeyword, setProductKeyword] = useState('');
-  const [productStatusFilter, setProductStatusFilter] = useState<number | undefined>();
+  const [productCategoryFilter, setProductCategoryFilter] = useState<
+    number | undefined
+  >();
+  const [productStatusFilter, setProductStatusFilter] = useState<
+    number | undefined
+  >();
 
   const [loginForm] = Form.useForm();
   const [categoryForm] = Form.useForm<CategoryFormValues>();
   const [productForm] = Form.useForm<ProductFormValues>();
+  const previewImages = (
+    (Form.useWatch('images', productForm) ?? []) as ProductImage[]
+  ).filter(item => item?.url?.trim());
 
   useEffect(() => {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token);
-      loadCategories();
-      loadProducts();
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
+      void loadCategories();
+      void loadProducts();
+      return;
     }
+    localStorage.removeItem(TOKEN_KEY);
   }, [token]);
 
   async function loadCategories() {
@@ -130,6 +159,7 @@ function App() {
         page: 1,
         pageSize: 100,
         keyWord: productKeyword || undefined,
+        categoryId: productCategoryFilter,
         status: productStatusFilter,
       });
       setProductData(page.list);
@@ -147,7 +177,7 @@ function App() {
         username: values.username,
         password: values.password,
       });
-      setToken(result.token);
+      setToken(result.token || 'local-dev-bypass');
       message.success('登录成功');
     } catch (error) {
       message.error(error instanceof Error ? error.message : '登录失败');
@@ -179,89 +209,130 @@ function App() {
 
   async function submitCategory(values: CategoryFormValues) {
     if (!token) return;
-    await saveCategory(token, values);
-    message.success(values.id ? '分类已更新' : '分类已创建');
-    setCategoryFormOpen(false);
-    await loadCategories();
+    try {
+      await saveCategory(token, values);
+      message.success(values.id ? '分类已更新' : '分类已创建');
+      setCategoryFormOpen(false);
+      await loadCategories();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '分类保存失败');
+    }
   }
 
   async function toggleCategory(record: Category, checked: boolean) {
     if (!token) return;
-    await updateCategoryStatus(token, record.id, checked ? 1 : 0);
-    message.success('分类状态已更新');
-    await loadCategories();
-    await loadProducts();
+    try {
+      await updateCategoryStatus(token, record.id, checked ? 1 : 0);
+      message.success('分类状态已更新');
+      await Promise.all([loadCategories(), loadProducts()]);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '分类状态更新失败');
+    }
   }
 
   async function removeCategory(record: Category) {
     if (!token) return;
-    await deleteCategory(token, [record.id]);
-    message.success('分类已软删除');
-    await loadCategories();
-    await loadProducts();
+    try {
+      await deleteCategory(token, [record.id]);
+      message.success('分类已删除');
+      await Promise.all([loadCategories(), loadProducts()]);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '分类删除失败');
+    }
   }
 
   async function openProductForm(record?: Product) {
     if (!record) {
+      setEditingProductId(null);
       productForm.setFieldsValue({
+        categoryId: undefined as never,
+        title: '',
+        subtitle: '',
+        description: '',
+        craftIntro: '',
+        inheritorName: '',
+        inheritorIntro: '',
         status: 0,
         sortOrder: 0,
-        skus: [{ name: '默认款', salePrice: 0, originalPrice: 0, stock: 0, status: 1 }],
-        images: [{ url: '', isMain: 1, sortOrder: 0 }],
+        skus: [getDefaultSku()],
+        images: [getDefaultImage(1)],
       });
       setProductFormOpen(true);
       return;
     }
 
     if (!token) return;
-    const detail = await fetchProductInfo(token, record.id);
-    productForm.setFieldsValue({
-      id: detail.id,
-      categoryId: detail.categoryId,
-      title: detail.title,
-      subtitle: detail.subtitle ?? '',
-      description: detail.description ?? '',
-      craftIntro: detail.craftIntro ?? '',
-      inheritorName: detail.inheritorName ?? '',
-      inheritorIntro: detail.inheritorIntro ?? '',
-      status: detail.status,
-      sortOrder: detail.sortOrder ?? 0,
-      skus: detail.skus?.length ? detail.skus : [{ name: '默认款', salePrice: 0, originalPrice: 0, stock: 0, status: 1 }],
-      images: detail.images?.length ? detail.images : [{ url: '', isMain: 1, sortOrder: 0 }],
-    });
-    setProductFormOpen(true);
+    try {
+      const detail = await fetchProductInfo(token, record.id);
+      setEditingProductId(detail.id);
+      productForm.setFieldsValue({
+        id: detail.id,
+        categoryId: detail.categoryId,
+        title: detail.title,
+        subtitle: detail.subtitle ?? '',
+        description: detail.description ?? '',
+        craftIntro: detail.craftIntro ?? '',
+        inheritorName: detail.inheritorName ?? '',
+        inheritorIntro: detail.inheritorIntro ?? '',
+        status: detail.status,
+        sortOrder: detail.sortOrder ?? 0,
+        skus: detail.skus?.length ? detail.skus : [getDefaultSku()],
+        images: detail.images?.length ? detail.images : [getDefaultImage(1)],
+      });
+      setProductFormOpen(true);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '商品详情加载失败');
+    }
   }
 
   async function submitProduct(values: ProductFormValues) {
     if (!token) return;
-    await saveProduct(token, {
-      ...values,
-      skus: values.skus.map((item, index) => ({
-        ...item,
-        sortOrder: item.sortOrder ?? index,
-      })),
-      images: values.images.map((item, index) => ({
-        ...item,
-        sortOrder: item.sortOrder ?? index,
-      })),
-    });
-    message.success(values.id ? '商品已更新' : '商品已创建');
-    setProductFormOpen(false);
-    await loadProducts();
+    try {
+      await saveProduct(token, {
+        ...values,
+        skus: values.skus.map((item, index) => ({
+          ...item,
+          sortOrder: item.sortOrder ?? index,
+        })),
+        images: values.images.map((item, index) => ({
+          ...item,
+          sortOrder: item.sortOrder ?? index,
+        })),
+      });
+      message.success(values.id ? '商品已更新' : '商品已创建');
+      setProductFormOpen(false);
+      await loadProducts();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '商品保存失败');
+    }
   }
 
   async function toggleProduct(record: Product, checked: boolean) {
     if (!token) return;
-    await updateProductStatus(token, record.id, checked ? 1 : 0);
-    message.success(checked ? '商品已上架' : '商品已下架');
-    await loadProducts();
+    try {
+      await updateProductStatus(token, record.id, checked ? 1 : 0);
+      message.success(checked ? '商品已上架' : '商品已下架');
+      await loadProducts();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '商品状态更新失败');
+    }
   }
 
   async function removeProduct(record: Product) {
     if (!token) return;
-    await deleteProduct(token, [record.id]);
-    message.success('商品已软删除');
-    await loadProducts();
+    try {
+      await deleteProduct(token, [record.id]);
+      message.success('商品已删除');
+      await loadProducts();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '商品删除失败');
+    }
+  }
+
+  function triggerProductSearch() {
+    window.setTimeout(() => {
+      void loadProducts();
+    }, 0);
   }
 
   function logout() {
@@ -270,14 +341,19 @@ function App() {
     message.success('已退出后台');
   }
 
+  const categoryOptions = categoryData.map(item => ({
+    label: item.name,
+    value: item.id,
+  }));
+
   if (!token) {
     return (
       <div className="login-shell">
         <Card className="login-panel" variant="borderless">
-          <Typography.Text className="eyebrow">Cool Admin Midway</Typography.Text>
-          <Typography.Title level={2}>乌东非遗商品管理后台</Typography.Title>
+          <Typography.Text className="eyebrow">WUDONG ADMIN</Typography.Text>
+          <Typography.Title level={2}>乌东非遗商品后台</Typography.Title>
           <Typography.Paragraph>
-            继续复用 Cool 的管理员登录、JWT 和权限体系，不重做后台认证。
+            直接使用管理员账号登录，重点保留商品、图片、SKU 和分类这些基础管理能力。
           </Typography.Paragraph>
           <Form
             layout="vertical"
@@ -285,10 +361,18 @@ function App() {
             onFinish={handleLogin}
             initialValues={{ username: 'admin', password: '123456' }}
           >
-            <Form.Item label="账号" name="username" rules={[{ required: true }]}>
+            <Form.Item
+              label="账号"
+              name="username"
+              rules={[{ required: true, message: '请输入账号' }]}
+            >
               <Input />
             </Form.Item>
-            <Form.Item label="密码" name="password" rules={[{ required: true }]}>
+            <Form.Item
+              label="密码"
+              name="password"
+              rules={[{ required: true, message: '请输入密码' }]}
+            >
               <Input.Password />
             </Form.Item>
             <Button type="primary" htmlType="submit" block loading={loginLoading}>
@@ -305,29 +389,49 @@ function App() {
       <Sider width={240} className="admin-sider">
         <div className="brand-block">
           <Typography.Text className="eyebrow">WUDONG</Typography.Text>
-          <Typography.Title level={3}>衣 · 非遗商品</Typography.Title>
+          <Typography.Title level={3}>商品管理</Typography.Title>
+          <Typography.Paragraph style={{ color: '#fff4ea', marginBottom: 0 }}>
+            基础录入、上下架、图片与 SKU 管理
+          </Typography.Paragraph>
         </div>
         <Menu
           mode="inline"
           selectedKeys={[activePanel]}
           onClick={({ key }) => setActivePanel(key as 'category' | 'product')}
           items={[
-            { key: 'category', icon: <AppstoreOutlined />, label: '商品分类' },
-            { key: 'product', icon: <ShoppingOutlined />, label: '商品管理' },
+            {
+              key: 'category',
+              icon: <AppstoreOutlined />,
+              label: '商品分类',
+            },
+            {
+              key: 'product',
+              icon: <ShoppingOutlined />,
+              label: '商品管理',
+            },
           ]}
         />
       </Sider>
 
       <Layout>
         <Header className="admin-header">
-          <Space>
-            <Button icon={<ReloadOutlined />} onClick={() => (activePanel === 'category' ? loadCategories() : loadProducts())}>
+          <Space wrap>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() =>
+                void (activePanel === 'category' ? loadCategories() : loadProducts())
+              }
+            >
               刷新
             </Button>
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => (activePanel === 'category' ? openCategoryForm() : openProductForm())}
+              onClick={() =>
+                void (activePanel === 'category'
+                  ? openCategoryForm()
+                  : openProductForm())
+              }
             >
               {activePanel === 'category' ? '新增分类' : '新增商品'}
             </Button>
@@ -346,7 +450,7 @@ function App() {
                   placeholder="搜索分类名称"
                   value={categoryKeyword}
                   onChange={event => setCategoryKeyword(event.target.value)}
-                  onSearch={loadCategories}
+                  onSearch={() => void loadCategories()}
                   style={{ width: 280 }}
                 />
               </Space>
@@ -364,7 +468,10 @@ function App() {
                     dataIndex: 'status',
                     width: 120,
                     render: (_, record) => (
-                      <Switch checked={record.status === 1} onChange={checked => toggleCategory(record, checked)} />
+                      <Switch
+                        checked={record.status === 1}
+                        onChange={checked => void toggleCategory(record, checked)}
+                      />
                     ),
                   },
                   { title: '备注', dataIndex: 'remark' },
@@ -373,10 +480,16 @@ function App() {
                     width: 180,
                     render: (_, record) => (
                       <Space>
-                        <Button size="small" onClick={() => openCategoryForm(record)}>
+                        <Button
+                          size="small"
+                          onClick={() => openCategoryForm(record)}
+                        >
                           编辑
                         </Button>
-                        <Popconfirm title="确认软删除该分类？" onConfirm={() => removeCategory(record)}>
+                        <Popconfirm
+                          title="确认删除这个分类吗？"
+                          onConfirm={() => void removeCategory(record)}
+                        >
                           <Button size="small" danger>
                             删除
                           </Button>
@@ -392,11 +505,22 @@ function App() {
               <Space className="toolbar" wrap>
                 <Input.Search
                   allowClear
-                  placeholder="搜索商品标题/副标题/传承人"
+                  placeholder="搜索标题 / 副标题 / 传承人"
                   value={productKeyword}
                   onChange={event => setProductKeyword(event.target.value)}
-                  onSearch={loadProducts}
+                  onSearch={() => void loadProducts()}
                   style={{ width: 320 }}
+                />
+                <Select
+                  allowClear
+                  placeholder="分类筛选"
+                  style={{ width: 180 }}
+                  value={productCategoryFilter}
+                  onChange={value => {
+                    setProductCategoryFilter(value);
+                    triggerProductSearch();
+                  }}
+                  options={categoryOptions}
                 />
                 <Select
                   allowClear
@@ -405,7 +529,7 @@ function App() {
                   value={productStatusFilter}
                   onChange={value => {
                     setProductStatusFilter(value);
-                    setTimeout(loadProducts, 0);
+                    triggerProductSearch();
                   }}
                   options={[
                     { label: '已下架', value: 0 },
@@ -418,7 +542,7 @@ function App() {
                 loading={productLoading}
                 dataSource={productData}
                 pagination={false}
-                scroll={{ x: 1100 }}
+                scroll={{ x: 1280 }}
                 columns={[
                   { title: 'ID', dataIndex: 'id', width: 80 },
                   {
@@ -426,28 +550,59 @@ function App() {
                     dataIndex: 'coverImage',
                     width: 110,
                     render: value =>
-                      value ? <Image src={value} width={72} height={54} style={{ objectFit: 'cover' }} /> : '-',
+                      value ? (
+                        <Image
+                          src={value}
+                          width={72}
+                          height={54}
+                          preview={false}
+                          style={{ objectFit: 'cover' }}
+                        />
+                      ) : (
+                        '-'
+                      ),
                   },
                   { title: '标题', dataIndex: 'title', width: 180 },
                   { title: '分类', dataIndex: 'categoryName', width: 120 },
                   {
+                    title: '数据',
+                    width: 160,
+                    render: (_, record) => (
+                      <Space size={4} wrap>
+                        <Tag color="blue">{`SKU ${record.skuCount ?? 0}`}</Tag>
+                        <Tag>{`图片 ${record.imageCount ?? 0}`}</Tag>
+                      </Space>
+                    ),
+                  },
+                  {
                     title: '价格区间',
-                    width: 140,
-                    render: (_, record) => `￥${Number(record.minPrice).toFixed(2)} - ￥${Number(record.maxPrice).toFixed(2)}`,
+                    width: 160,
+                    render: (_, record) =>
+                      `¥${Number(record.minPrice).toFixed(2)} - ¥${Number(
+                        record.maxPrice
+                      ).toFixed(2)}`,
                   },
                   { title: '库存', dataIndex: 'totalStock', width: 100 },
                   {
-                    title: '售罄',
+                    title: '售卖状态',
                     dataIndex: 'soldOut',
-                    width: 100,
-                    render: value => (value ? <Tag color="red">售罄</Tag> : <Tag color="green">可售</Tag>),
+                    width: 110,
+                    render: value =>
+                      value ? (
+                        <Tag color="red">售罄</Tag>
+                      ) : (
+                        <Tag color="green">可售</Tag>
+                      ),
                   },
                   {
                     title: '上架',
                     dataIndex: 'status',
                     width: 100,
                     render: (_, record) => (
-                      <Switch checked={record.status === 1} onChange={checked => toggleProduct(record, checked)} />
+                      <Switch
+                        checked={record.status === 1}
+                        onChange={checked => void toggleProduct(record, checked)}
+                      />
                     ),
                   },
                   {
@@ -456,10 +611,16 @@ function App() {
                     width: 180,
                     render: (_, record) => (
                       <Space>
-                        <Button size="small" onClick={() => openProductForm(record)}>
+                        <Button
+                          size="small"
+                          onClick={() => void openProductForm(record)}
+                        >
                           编辑
                         </Button>
-                        <Popconfirm title="确认软删除该商品？" onConfirm={() => removeProduct(record)}>
+                        <Popconfirm
+                          title="确认删除这个商品吗？"
+                          onConfirm={() => void removeProduct(record)}
+                        >
                           <Button size="small" danger>
                             删除
                           </Button>
@@ -484,18 +645,35 @@ function App() {
           <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
-          <Form.Item label="分类名称" name="name" rules={[{ required: true, message: '请输入分类名称' }]}>
+          <Form.Item
+            label="分类名称"
+            name="name"
+            rules={[{ required: true, message: '请输入分类名称' }]}
+          >
             <Input />
           </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item label="排序" name="sortOrder" rules={[{ required: true }]}>
+              <Form.Item
+                label="排序"
+                name="sortOrder"
+                rules={[{ required: true, message: '请输入排序值' }]}
+              >
                 <InputNumber min={0} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="状态" name="status" rules={[{ required: true }]}>
-                <Select options={[{ label: '启用', value: 1 }, { label: '停用', value: 0 }]} />
+              <Form.Item
+                label="状态"
+                name="status"
+                rules={[{ required: true, message: '请选择状态' }]}
+              >
+                <Select
+                  options={[
+                    { label: '启用', value: 1 },
+                    { label: '停用', value: 0 },
+                  ]}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -507,8 +685,8 @@ function App() {
 
       <Drawer
         open={productFormOpen}
-        width={760}
-        title="商品编辑"
+        width={860}
+        title={editingProductId ? '编辑商品' : '新增商品'}
         onClose={() => setProductFormOpen(false)}
         extra={
           <Button type="primary" onClick={() => productForm.submit()}>
@@ -520,18 +698,28 @@ function App() {
           <Form.Item name="id" hidden>
             <Input />
           </Form.Item>
+
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item label="商品标题" name="title" rules={[{ required: true, message: '请输入商品标题' }]}>
+              <Form.Item
+                label="商品标题"
+                name="title"
+                rules={[{ required: true, message: '请输入商品标题' }]}
+              >
                 <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="商品分类" name="categoryId" rules={[{ required: true, message: '请选择分类' }]}>
-                <Select options={categoryData.map(item => ({ label: item.name, value: item.id }))} />
+              <Form.Item
+                label="商品分类"
+                name="categoryId"
+                rules={[{ required: true, message: '请选择商品分类' }]}
+              >
+                <Select options={categoryOptions} />
               </Form.Item>
             </Col>
           </Row>
+
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item label="副标题" name="subtitle">
@@ -539,22 +727,38 @@ function App() {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item label="状态" name="status" rules={[{ required: true }]}>
-                <Select options={[{ label: '下架', value: 0 }, { label: '上架', value: 1 }]} />
+              <Form.Item
+                label="状态"
+                name="status"
+                rules={[{ required: true, message: '请选择状态' }]}
+              >
+                <Select
+                  options={[
+                    { label: '下架', value: 0 },
+                    { label: '上架', value: 1 },
+                  ]}
+                />
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item label="排序" name="sortOrder" rules={[{ required: true }]}>
+              <Form.Item
+                label="排序"
+                name="sortOrder"
+                rules={[{ required: true, message: '请输入排序值' }]}
+              >
                 <InputNumber min={0} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
+
           <Form.Item label="商品说明" name="description">
             <Input.TextArea rows={3} />
           </Form.Item>
+
           <Form.Item label="工艺介绍" name="craftIntro">
             <Input.TextArea rows={3} />
           </Form.Item>
+
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item label="传承人姓名" name="inheritorName">
@@ -573,9 +777,7 @@ function App() {
               <Card
                 title="SKU 列表"
                 extra={
-                  <Button onClick={() => add({ name: '', salePrice: 0, originalPrice: 0, stock: 0, status: 1 })}>
-                    添加 SKU
-                  </Button>
+                  <Button onClick={() => add(getDefaultSku())}>添加 SKU</Button>
                 }
               >
                 {fields.map(field => (
@@ -590,23 +792,56 @@ function App() {
                       </Form.Item>
                     </Col>
                     <Col span={4}>
-                      <Form.Item label="售价" name={[field.name, 'salePrice']} rules={[{ required: true }]}>
-                        <InputNumber min={0} precision={2} style={{ width: '100%' }} />
+                      <Form.Item
+                        label="售价"
+                        name={[field.name, 'salePrice']}
+                        rules={[{ required: true, message: '请输入售价' }]}
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={2}
+                          style={{ width: '100%' }}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
-                      <Form.Item label="原价" name={[field.name, 'originalPrice']} rules={[{ required: true }]}>
-                        <InputNumber min={0} precision={2} style={{ width: '100%' }} />
+                      <Form.Item
+                        label="原价"
+                        name={[field.name, 'originalPrice']}
+                        rules={[{ required: true, message: '请输入原价' }]}
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={2}
+                          style={{ width: '100%' }}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
-                      <Form.Item label="库存" name={[field.name, 'stock']} rules={[{ required: true }]}>
-                        <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                      <Form.Item
+                        label="库存"
+                        name={[field.name, 'stock']}
+                        rules={[{ required: true, message: '请输入库存' }]}
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={0}
+                          style={{ width: '100%' }}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={3}>
-                      <Form.Item label="状态" name={[field.name, 'status']} rules={[{ required: true }]}>
-                        <Select options={[{ label: '启用', value: 1 }, { label: '停用', value: 0 }]} />
+                      <Form.Item
+                        label="状态"
+                        name={[field.name, 'status']}
+                        rules={[{ required: true, message: '请选择状态' }]}
+                      >
+                        <Select
+                          options={[
+                            { label: '启用', value: 1 },
+                            { label: '停用', value: 0 },
+                          ]}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={2}>
@@ -628,8 +863,33 @@ function App() {
               <Card
                 title="商品图片"
                 style={{ marginTop: 16 }}
-                extra={<Button onClick={() => add({ url: '', isMain: 0, sortOrder: 0 })}>添加图片</Button>}
+                extra={
+                  <Button onClick={() => add(getDefaultImage(0))}>添加图片</Button>
+                }
               >
+                {previewImages.length ? (
+                  <Space wrap style={{ marginBottom: 16 }}>
+                    {previewImages.map((item, index) => (
+                      <div
+                        key={`${item.id ?? 'new'}-${index}`}
+                        style={{ width: 120 }}
+                      >
+                        <Image
+                          src={item.url}
+                          width={120}
+                          height={90}
+                          preview={false}
+                          style={{ objectFit: 'cover', borderRadius: 8 }}
+                        />
+                        <div style={{ marginTop: 8 }}>
+                          <Tag color={item.isMain === 1 ? 'green' : 'default'}>
+                            {item.isMain === 1 ? '主图' : `图片 ${index + 1}`}
+                          </Tag>
+                        </div>
+                      </div>
+                    ))}
+                  </Space>
+                ) : null}
                 {fields.map(field => (
                   <Row gutter={12} key={field.key} align="middle">
                     <Col span={16}>
@@ -642,13 +902,26 @@ function App() {
                       </Form.Item>
                     </Col>
                     <Col span={4}>
-                      <Form.Item label="主图" name={[field.name, 'isMain']} rules={[{ required: true }]}>
-                        <Select options={[{ label: '是', value: 1 }, { label: '否', value: 0 }]} />
+                      <Form.Item
+                        label="主图"
+                        name={[field.name, 'isMain']}
+                        rules={[{ required: true, message: '请选择是否主图' }]}
+                      >
+                        <Select
+                          options={[
+                            { label: '是', value: 1 },
+                            { label: '否', value: 0 },
+                          ]}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={2}>
                       <Form.Item label="排序" name={[field.name, 'sortOrder']}>
-                        <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                        <InputNumber
+                          min={0}
+                          precision={0}
+                          style={{ width: '100%' }}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={2}>

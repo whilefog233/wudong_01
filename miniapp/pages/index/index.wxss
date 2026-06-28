@@ -1,4 +1,3 @@
-/* ========== 调试面板样式（临时） ========== */
 .debug-panel {
   background: #fff9e6;
   border: 2rpx solid #e6c300;
@@ -21,7 +20,24 @@
   color: #333;
   line-height: 1.6;
 }
-/* ========== 调试面板样式结束 ========== */
+
+.debug-input {
+  margin-top: 16rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.debug-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.small-button {
+  margin: 0;
+  flex: 1;
+}
 
 .hero,
 .search-panel {

@@ -392,6 +392,7 @@ export class WudongProductService extends BaseService {
       coverImage: cover?.url || '',
       soldOut: this.calcSoldOut(skus),
       totalStock,
+      skuCount: skus.length,
       imageCount: images.length,
       isFavorite: details.favoriteSet.has(product.id),
       minPrice: Number(product.minPrice || 0),

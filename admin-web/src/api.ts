@@ -75,6 +75,8 @@ export type Product = {
   maxPrice: number;
   soldOut: boolean;
   totalStock: number;
+  skuCount?: number;
+  imageCount?: number;
   coverImage: string;
   sortOrder?: number;
   craftIntro: string | null;

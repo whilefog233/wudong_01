@@ -1,4 +1,4 @@
-import { Get, Inject, Query } from '@midwayjs/core';
+import { Get, Inject, Provide, Query } from '@midwayjs/core';
 import {
   BaseController,
   CoolController,
@@ -9,6 +9,7 @@ import {
 import { WudongProductService } from '../../service/product';
 
 @CoolUrlTag()
+@Provide()
 @CoolController('/app/wudong/products')
 export class AppWudongProductController extends BaseController {
   @Inject()

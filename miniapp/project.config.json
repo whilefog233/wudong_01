@@ -28,7 +28,8 @@
     },
     "disableUseStrict": false,
     "useCompilerPlugins": false,
-    "minifyWXML": false
+    "minifyWXML": false,
+    "compileHotReLoad": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.16.1",
@@ -37,7 +38,36 @@
     "ignore": [],
     "include": []
   },
-  "condition": {},
+  "condition": {
+    "search": {
+      "current": -1,
+      "list": []
+    },
+    "conversation": {
+      "current": -1,
+      "list": []
+    },
+    "plugin": {
+      "current": -1,
+      "list": []
+    },
+    "game": {
+      "currentL": -1,
+      "list": []
+    },
+    "miniprogram": {
+      "current": 0,
+      "list": [
+        {
+          "id": 0,
+          "name": "首页",
+          "pathName": "pages/index/index",
+          "query": "",
+          "scene": 1001
+        }
+      ]
+    }
+  },
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
